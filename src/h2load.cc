@@ -679,6 +679,10 @@ int Client::try_again_or_fail() {
   if (new_connection_requested) {
     new_connection_requested = false;
 
+    if ( worker->current_phase == Phase::DURATION_OVER) {
+      return -1;
+    }
+
     if (req_left) {
 
       if (worker->current_phase == Phase::MAIN_DURATION) {
