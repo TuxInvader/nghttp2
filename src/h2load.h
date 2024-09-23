@@ -139,6 +139,8 @@ struct Config {
   size_t max_udp_payload_size;
   // Enable ktls.
   bool ktls;
+  // Disable SSL Session reuse.
+  bool disable_ssl_reuse;
   // sni is the value sent in TLS SNI, overriding DNS name of the
   // remote host.
   std::string sni;

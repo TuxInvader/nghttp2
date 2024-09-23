@@ -124,7 +124,8 @@ Config::Config()
       rps(0.),
       no_udp_gso(false),
       max_udp_payload_size(0),
-      ktls(false) {}
+      ktls(false),
+      disable_ssl_reuse(false) {}
 
 Config::~Config() {
   if (addrs) {
@@ -565,10 +566,9 @@ int Client::make_socket(addrinfo *addr) {
       return -1;
     }
     if (config.scheme == "https") {
-      if (!ssl) {
+      if (!ssl or config.disable_ssl_reuse) {
         ssl = SSL_new(worker->ssl_ctx);
       }
-
       SSL_set_connect_state(ssl);
     }
   }
@@ -2300,6 +2300,8 @@ Options:
   --max-udp-payload-size=<SIZE>
               Specify the maximum outgoing UDP datagram payload size.
   --ktls      Enable ktls.
+  --disable-ssl-reuse
+              Disable SSL Session (context) reuse between connections.
   --sni=<DNSNAME>
               Send  <DNSNAME> in  TLS  SNI, overriding  the host  name
               specified in URI.
@@ -2366,6 +2368,7 @@ int main(int argc, char **argv) {
         {"ktls", no_argument, &flag, 18},
         {"alpn-list", required_argument, &flag, 19},
         {"sni", required_argument, &flag, 20},
+        {"disable-ssl-reuse", no_argument, &flag, 21},
         {nullptr, 0, nullptr, 0}};
     int option_index = 0;
     auto c = getopt_long(argc, argv,
@@ -2705,6 +2708,10 @@ int main(int argc, char **argv) {
       case 20:
         // --sni
         config.sni = optarg;
+        break;
+      case 21:
+        // --disable-ssl-reuse
+        config.disable_ssl_reuse = true;
         break;
       }
       break;
